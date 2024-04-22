@@ -1,62 +1,109 @@
-# trustyai-kserve
+# TrustyAI KServe Explainer
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+The TrustyAI KServe integration provides explanations for predictions made by AI/ML models hosted on KServe. It supports LIME and SHAP explanation methods, configurable directly within KServe `InferenceServices`.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+## Features
 
-## Running the application in dev mode
+- **Explainability**: Integrated support for LIME and SHAP explanation methods to interpret model predictions via the `:explain` endpoint.
 
-You can run your application in dev mode that enables live coding using:
+## Deployment on KServe
 
-```shell script
-./mvnw compile quarkus:dev
+The TrustyAI explainer can be added to KServe InferenceServices. Here are YAML configurations to deploy explainers with LIME and SHAP:
+
+### LIME Explainer InferenceService
+
+```yaml
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "explainer-test-lime"
+  annotations:
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    serving.knative.openshift.io/enablePassthrough: "true"
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: sklearn
+      protocolVersion: v2
+      runtime: kserve-sklearnserver
+      storageUri: https://github.com/ruivieira/model-collection/raw/main/credit-score/model.joblib
+  explainer:
+    containers:
+      - name: explainer
+        image: quay.io/ruimvieira/trustyai-kserve-explainer:latest
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+### Example: Using the LIME Explainer
 
-## Packaging and running the application
+You can interact with the LIME explainer using the following `curl` command:
 
-The application can be packaged using:
-
-```shell script
-./mvnw package
+```bash
+payload='{"data": {"ndarray": [[1.0, 2.0]]}}'  # Adjust payload as per your input requirements
+curl -s -H "Host: ${HOST}" \
+     -H "Content-Type: application/json" \
+     "http://${GATEWAY}/v1/models/explainer-test-lime:explain" -d $payload
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+This command sends a JSON payload to the `:explain` endpoint and retrieves an explanation for the prediction. The response structure includes the saliencies of each feature contributing to the prediction, as shown below:
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.type=uber-jar
+```json
+{
+  "saliencies": {
+    "value": {
+      "output": {"value": {"underlyingObject": 1}, "type": "NUMBER", "score": 1.0, "name": "value"},
+      "perFeatureImportance": [
+        {
+          "feature": {"name": "f", "type": "NUMBER", "value": {"underlyingObject": 0.9}},
+          "score": 0.7474712680313286
+        }
+        // Additional features...
+      ]
+    }
+  },
+  "availableCFs": [],
+  "sourceExplainer": "LIME"
+}
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+## Contributing
 
-## Creating a native executable
+To get started with contributing to this project:
 
-You can create a native executable using:
+### Prerequisites
 
-```shell script
-./mvnw package -Dnative
+- JDK 11+
+- Maven 3.8.1+
+- Docker (optional, for containerization)
+
+
+### Clone the repository
+
+```bash
+git clone https://github.com/ruimvieira/trustyai-kserve.git
+cd trustyai-kserve
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+### Build the project
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+```bash
+mvn clean package
 ```
 
-You can then execute your native executable with: `./target/trustyai-kserve-1.0-SNAPSHOT-runner`
+### Run locally
 
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
+```bash
+mvn quarkus:dev
+```
 
-## Provided Code
+### Docker Integration
 
-### RESTEasy Reactive
+Build and run the container:
 
-Easily start your Reactive RESTful Web Services
+```bash
+docker build -f src/main/docker/Dockerfile.jvm -t trustyai-kserve .
+docker run -i --rm -p 8080:8080 trustyai-kserve
+```
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+This project is licensed under the Apache License Version 2.0 - see the [LICENSE](LICENSE) file for details.
