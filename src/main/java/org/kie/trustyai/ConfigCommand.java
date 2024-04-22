@@ -5,39 +5,38 @@ import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import jakarta.inject.Inject;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
+import org.jboss.logging.Logger;
 
 @QuarkusMain
-@Command(name = "config-command", mixinStandardHelpOptions = true, description = "Processes command-line options for configuration.")
 public class ConfigCommand implements QuarkusApplication {
 
+    private static final Logger LOGGER = Logger.getLogger(ConfigCommand.class.getName());
+
     @Inject
-    ConfigService configService;
-
-    @Option(names = "--predictor_host", description = "The host of the predictor service")
-    String predictorHost;
-
-    @Option(names = "--model_name", description = "The name of the model")
-    String modelName;
+    CommandLineArgs cmdArgs;
 
     @Override
     public int run(String... args) {
-        CommandLine.populateCommand(this, args);
-        configService.addConfig("predictor_host", predictorHost);
-        configService.addConfig("model_name", modelName);
+        System.out.println("Starting application...");
+        final CommandLine commandLine = new CommandLine(cmdArgs);
 
-         Quarkus.waitForExit();
+        try {
+            commandLine.parseArgs(args);
+            if (commandLine.isUsageHelpRequested()) {
+                commandLine.usage(System.out);
+                return 0;
+            }
 
+
+            System.out.println("Configuration loaded successfully.");
+        } catch (CommandLine.ParameterException e) {
+            System.out.println("Error parsing command line: " + e.getMessage());
+            commandLine.usage(System.err);
+            return 1;
+        }
+
+        Quarkus.waitForExit();  // Wait for Quarkus shutdown events
+        System.out.println("Quarkus is waiting for exit...");
         return 0;
-    }
-
-    public String getV1HTTPPredictorURI() {
-        return "http://" + configService.getConfig("predictor_host") + "/v1/models/" + configService.getConfig("model_name") + ":predict";
-    }
-
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new ConfigCommand()).execute(args);
-        System.exit(exitCode);
     }
 }

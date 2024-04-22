@@ -1,28 +1,16 @@
 package org.kie.trustyai;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collections;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class ConfigService {
 
-    private final Map<String, String> configurations = new HashMap<>();
 
-    public void addConfig(String key, String value) {
-        configurations.put(key, value);
-    }
+    @ConfigProperty(name = "explainer.type", defaultValue = "LIME")
+    String explainerType;
 
-    public String getConfig(String key) {
-        return configurations.get(key);
-    }
-
-    public Map<String, String> getAllConfigurations() {
-        return Collections.unmodifiableMap(configurations);
-    }
-
-    public String getV1HTTPPredictorURI() {
-        return "http://" + getConfig("predictor_host") + "/v1/models/" + getConfig("model_name") + ":predict";
+    public String getExplainerType() {
+        return explainerType;
     }
 }
