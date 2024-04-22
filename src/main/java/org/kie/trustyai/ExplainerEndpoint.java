@@ -30,7 +30,8 @@ public class ExplainerEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response explainIncome(@PathParam("modelName") String modelName, KServeV1RequestPayload data) throws ExecutionException, InterruptedException {
-        final PredictionProvider provider = new KServeV1HTTPPredictionProvider(null, null, configService.getV1HTTPPredictorURI());
+        final String predictorURI = configService.getV1HTTPPredictorURI();
+        final PredictionProvider provider = new KServeV1HTTPPredictionProvider(null, null, predictorURI);
         final List<PredictionInput> input = data.toPredictionInputs();
         final PredictionOutput output = provider.predictAsync(input).get().get(0);
         final Prediction prediction = new SimplePrediction(input.get(0), output);
