@@ -10,17 +10,13 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.kie.trustyai.connectors.kserve.v1.KServeV1HTTPPredictionProvider;
 import org.kie.trustyai.connectors.kserve.v1.KServeV1RequestPayload;
-import org.kie.trustyai.explainability.local.lime.LimeConfig;
-import org.kie.trustyai.explainability.local.lime.LimeExplainer;
-import org.kie.trustyai.explainability.local.shap.ShapConfig;
-import org.kie.trustyai.explainability.local.shap.ShapKernelExplainer;
+import org.kie.trustyai.explainability.local.LocalExplainer;
 import org.kie.trustyai.explainability.model.*;
 
 import jakarta.inject.Inject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 @Path("/v1/models/{modelName}:explain")
@@ -56,11 +52,9 @@ public class ExplainerEndpoint {
 
         final ExplainerType explainerType = configService.getExplainerType();
 
-        if (explainerType == ExplainerType.LIME) {
+        try {
+            final LocalExplainer<SaliencyResults> explainer = ExplainerFactory.getExplainer(explainerType, input);
 
-            final LimeConfig config = new LimeConfig().withNormalizeWeights(true).withSamples(5000).withRetries(10).withUseWLRLinearModel(true);
-
-            final LimeExplainer explainer = new LimeExplainer(config);
             final SaliencyResults results = explainer.explainAsync(prediction, provider).get();
 
             try {
@@ -69,21 +63,8 @@ public class ExplainerEndpoint {
             } catch (Exception e) {
                 return Response.serverError().entity("Error serializing SaliencyResults to JSON: " + e.getMessage()).build();
             }
-        } else if (explainerType == ExplainerType.SHAP) {
-
-            final ShapConfig config = ShapConfig.builder().withLink(ShapConfig.LinkType.IDENTITY).withBackground(input).build();
-            final ShapKernelExplainer explainer = new ShapKernelExplainer(config);
-            final SaliencyResults results = explainer.explainAsync(prediction, provider).get();
-
-            try {
-                String resultsJson = objectMapper.writeValueAsString(results);
-                return Response.ok(resultsJson, MediaType.APPLICATION_JSON).build();
-            } catch (Exception e) {
-                return Response.serverError().entity("Error serializing SaliencyResults to JSON: " + e.getMessage()).build();
-            }
-        } else {
+        } catch (IllegalArgumentException e) {
             return Response.serverError().entity("Explainer type not supported: " + explainerType).build();
-
         }
 
     }
