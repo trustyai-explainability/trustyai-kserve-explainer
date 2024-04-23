@@ -17,7 +17,7 @@ public class ConfigCommand implements QuarkusApplication {
 
     @Override
     public int run(String... args) {
-        System.out.println("Starting application...");
+        LOGGER.debug("Starting application...");
         final CommandLine commandLine = new CommandLine(cmdArgs);
 
         try {
@@ -28,15 +28,15 @@ public class ConfigCommand implements QuarkusApplication {
             }
 
 
-            System.out.println("Configuration loaded successfully.");
+            LOGGER.debug("Configuration loaded successfully.");
         } catch (CommandLine.ParameterException e) {
-            System.out.println("Error parsing command line: " + e.getMessage());
+            LOGGER.error("Error parsing command line: " + e.getMessage());
             commandLine.usage(System.err);
             return 1;
         }
 
         Quarkus.waitForExit();  // Wait for Quarkus shutdown events
-        System.out.println("Quarkus is waiting for exit...");
+        LOGGER.debug("Quarkus is waiting for exit...");
         return 0;
     }
 }
