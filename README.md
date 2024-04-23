@@ -12,7 +12,9 @@ The TrustyAI KServe integration provides explanations for predictions made by AI
 
 The TrustyAI explainer can be added to KServe `InferenceServices`. Here are YAML configurations to deploy explainers with LIME and SHAP:
 
-### LIME Explainer InferenceService
+### LIME Explainer `InferenceService`
+
+By default, the TrustyAI KServe explainer will use the LIME explainer. You can deploy the explainer using the following YAML configuration:
 
 ```yaml
 apiVersion: "serving.kserve.io/v1beta1"
@@ -68,6 +70,39 @@ This command sends a JSON payload to the `:explain` endpoint and retrieves an ex
   "sourceExplainer": "LIME"
 }
 ```
+
+### SHAP Explainer `InferenceService`
+
+To use the SHAP explainer, you can deploy the explainer by specifying it as an environment variable and using the following YAML configuration (initial part will be identical to the previous `InferenceService`):
+
+
+```yaml
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "explainer-test-lime"
+  annotations:
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    serving.knative.openshift.io/enablePassthrough: "true"
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: sklearn
+      protocolVersion: v2
+      runtime: kserve-sklearnserver
+      storageUri: https://github.com/trustyai-explainability/model-collection/raw/main/credit-score/model.joblib
+  explainer:
+    containers:
+      - name: explainer
+        image: quay.io/ruimvieira/trustyai-kserve-explainer:latest
+        env:
+          - name: EXPLAINER_TYPE # <- specify SHAP here
+            value: "SHAP"
+```
+
+The explanation request will be identical to the LIME explainer case.
 
 ## Contributing
 
