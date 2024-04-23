@@ -1,3 +1,5 @@
+[![CI](https://github.com/ruivieira/trustyai-kserve-explainer/actions/workflows/ci.yaml/badge.svg)](https://github.com/ruivieira/trustyai-kserve-explainer/actions/workflows/ci.yaml)
+
 # TrustyAI KServe Explainer
 
 The TrustyAI KServe integration provides explanations for predictions made by AI/ML models using the built-in [KServe explainer support](https://kserve.github.io/website/0.12/modelserving/explainer/explainer/). It supports LIME and SHAP explanation methods, configurable directly within KServe `InferenceServices`.
