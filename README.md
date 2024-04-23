@@ -1,6 +1,6 @@
 # TrustyAI KServe Explainer
 
-The TrustyAI KServe integration provides explanations for predictions made by AI/ML models hosted on KServe. It supports LIME and SHAP explanation methods, configurable directly within KServe `InferenceServices`.
+The TrustyAI KServe integration provides explanations for predictions made by AI/ML models using the built-in [KServe explainer support](https://kserve.github.io/website/0.12/modelserving/explainer/explainer/). It supports LIME and SHAP explanation methods, configurable directly within KServe `InferenceServices`.
 
 ## Features
 
@@ -8,7 +8,7 @@ The TrustyAI KServe integration provides explanations for predictions made by AI
 
 ## Deployment on KServe
 
-The TrustyAI explainer can be added to KServe InferenceServices. Here are YAML configurations to deploy explainers with LIME and SHAP:
+The TrustyAI explainer can be added to KServe `InferenceServices`. Here are YAML configurations to deploy explainers with LIME and SHAP:
 
 ### LIME Explainer InferenceService
 
@@ -28,7 +28,7 @@ spec:
         name: sklearn
       protocolVersion: v2
       runtime: kserve-sklearnserver
-      storageUri: https://github.com/ruivieira/model-collection/raw/main/credit-score/model.joblib
+      storageUri: https://github.com/trustyai-explainability/model-collection/raw/main/credit-score/model.joblib
   explainer:
     containers:
       - name: explainer
@@ -105,5 +105,7 @@ Build and run the container:
 docker build -f src/main/docker/Dockerfile.jvm -t trustyai-kserve .
 docker run -i --rm -p 8080:8080 trustyai-kserve
 ```
+
+## License
 
 This project is licensed under the Apache License Version 2.0 - see the [LICENSE](LICENSE) file for details.
