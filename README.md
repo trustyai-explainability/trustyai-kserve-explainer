@@ -1,4 +1,4 @@
-[![CI](https://github.com/ruivieira/trustyai-kserve-explainer/actions/workflows/ci.yaml/badge.svg)](https://github.com/ruivieira/trustyai-kserve-explainer/actions/workflows/ci.yaml)
+[![CI](https://github.com/trustyai-explainability/trustyai-kserve-explainer/actions/workflows/ci.yaml/badge.svg)](https://github.com/trustyai-explainability/trustyai-kserve-explainer/actions/workflows/ci.yaml)
 
 # TrustyAI KServe Explainer
 
@@ -36,7 +36,7 @@ spec:
   explainer:
     containers:
       - name: explainer
-        image: quay.io/ruimvieira/trustyai-kserve-explainer:latest
+        image: quay.io/trustyai/trustyai-kserve-explainer:latest
 ```
 
 ### Example: Using the LIME Explainer
@@ -96,7 +96,7 @@ spec:
   explainer:
     containers:
       - name: explainer
-        image: quay.io/ruimvieira/trustyai-kserve-explainer:latest
+        image: quay.io/trustyai/trustyai-kserve-explainer:latest
         env:
           - name: EXPLAINER_TYPE # <- specify SHAP here
             value: "SHAP"
@@ -118,7 +118,7 @@ To get started with contributing to this project:
 ### Clone the repository
 
 ```bash
-git clone https://github.com/ruimvieira/trustyai-kserve.git
+git clone https://github.com/trustyai/trustyai-kserve-explainer.git
 cd trustyai-kserve
 ```
 
