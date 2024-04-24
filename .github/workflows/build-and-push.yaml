@@ -37,11 +37,11 @@ jobs:
 
       - name: Pull prerequisite images
         run: |
-          docker pull $(cat Dockerfile | grep -o -P '(?<=FROM ).*(?= AS build)')
-          docker pull $(cat Dockerfile | grep -o -P '(?<=FROM ).*(?= AS runtime)')
+          docker pull $(cat src/main/docker/Dockerfile.jvm | grep -o -P '(?<=FROM ).*(?= AS build)')
+          docker pull $(cat src/main/docker/Dockerfile.jvm | grep -o -P '(?<=FROM ).*(?= AS runtime)')
 
       - name: Build Docker image
-        run: docker build -t ${{ vars.QUAY_RELEASE_REPO }}:$TAG .
+        run: docker build -f src/main/docker/Dockerfile.jvm -t ${{ vars.QUAY_RELEASE_REPO }}:$TAG .
 
       - name: Log in to Quay
         run: docker login -u ${{ secrets.QUAY_ROBOT_USERNAME }} -p ${{ secrets.QUAY_ROBOT_SECRET }} quay.io
