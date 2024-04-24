@@ -33,7 +33,7 @@ jobs:
       - name: Maven Clean Install on External Repository
         run: |
           cd trustyai-explainability
-          mvn clean install
+          mvn clean install -DskipTests
 
       - name: Pull prerequisite images
         run: |
