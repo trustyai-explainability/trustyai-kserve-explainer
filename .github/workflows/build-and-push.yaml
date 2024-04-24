@@ -22,23 +22,25 @@ jobs:
             echo "TAG=latest" >> $GITHUB_ENV
           fi
 
+      - name: Set up JDK + Maven version
+        uses: s4u/setup-maven-action@v1.4.0
+        with:
+          java-version: '17'
+          maven-version: '3.8.6'
+
       # Checkout trustyai-core
       - name: Checkout external repository
         uses: actions/checkout@v3
         with:
           repository: trustyai-explainability/trustyai-explainability
           path: ./trustyai-explainability
+          ref: 'main'
 
       # Maven build trustyai-core
       - name: Maven Clean Install on External Repository
         run: |
           cd trustyai-explainability
-          mvn clean install -DskipTests
-
-      - name: Pull prerequisite images
-        run: |
-          docker pull $(cat src/main/docker/Dockerfile.jvm | grep -o -P '(?<=FROM ).*(?= AS build)')
-          docker pull $(cat src/main/docker/Dockerfile.jvm | grep -o -P '(?<=FROM ).*(?= AS runtime)')
+          mvn clean install -Pservice-minimal -DskipTests
 
       - name: Build Docker image
         run: docker build -f src/main/docker/Dockerfile.jvm -t ${{ vars.QUAY_RELEASE_REPO }}:$TAG .
