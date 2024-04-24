@@ -37,10 +37,14 @@ jobs:
           ref: 'main'
 
       # Maven build trustyai-core
-      - name: Maven Clean Install on External Repository
+      - name: Maven install trustyai-core
         run: |
           cd trustyai-explainability
           mvn clean install -Pservice-minimal -DskipTests
+
+      # Maven build KServe explainer
+      - name: Maven install KServe explainer
+        run: mvn clean install package -DskipTests
 
       - name: Build Docker image
         run: docker build -f src/main/docker/Dockerfile.jvm -t ${{ vars.QUAY_RELEASE_REPO }}:$TAG .
