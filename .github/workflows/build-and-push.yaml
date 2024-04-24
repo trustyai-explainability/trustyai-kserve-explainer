@@ -44,7 +44,7 @@ jobs:
 
       # Maven build KServe explainer
       - name: Maven install KServe explainer
-        run: mvn clean install -DskipTests
+        run: mvn clean install package -DskipTests
 
       - name: Build Docker image
         run: docker build -f src/main/docker/Dockerfile.jvm -t ${{ vars.QUAY_RELEASE_REPO }}:$TAG .
