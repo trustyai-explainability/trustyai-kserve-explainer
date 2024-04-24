@@ -1,0 +1,50 @@
+name: Build and Push
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Image Tag
+        run: |
+          if [[ $GITHUB_REF_TYPE == 'tag' ]]; then
+            echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          elif [[ $GITHUB_REF_NAME == 'main' ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+          fi
+
+      # Checkout trustyai-core
+      - name: Checkout external repository
+        uses: actions/checkout@v3
+        with:
+          repository: trustyai-explainability/trustyai-explainability
+          path: ./trustyai-explainability
+
+      # Maven build trustyai-core
+      - name: Maven Clean Install on External Repository
+        run: |
+          cd trustyai-explainability
+          mvn clean install -DskipTests
+
+      - name: Pull prerequisite images
+        run: |
+          docker pull $(cat Dockerfile | grep -o -P '(?<=FROM ).*(?= AS build)')
+          docker pull $(cat Dockerfile | grep -o -P '(?<=FROM ).*(?= AS runtime)')
+
+      - name: Build Docker image
+        run: docker build -t ${{ vars.QUAY_RELEASE_REPO }}:$TAG .
+
+      - name: Log in to Quay
+        run: docker login -u ${{ secrets.QUAY_ROBOT_USERNAME }} -p ${{ secrets.QUAY_ROBOT_SECRET }} quay.io
+
+      - name: Push Docker image to Quay
+        run: docker push ${{ vars.QUAY_RELEASE_REPO }}:$TAG
