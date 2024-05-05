@@ -16,6 +16,35 @@ public class ConfigService {
     @ConfigProperty(name = "explainer.type", defaultValue = "LIME")
     ExplainerType explainerType;
 
+    public int getLimeSamples() {
+        return limeSamples;
+    }
+
+    @ConfigProperty(name = "lime.samples", defaultValue = "200")
+    int limeSamples;
+
+    public int getLimeRetries() {
+        return limeRetries;
+    }
+
+    @ConfigProperty(name = "lime.retries", defaultValue = "2")
+    int limeRetries;
+
+    public boolean getLimeWLR() {
+        return limeWLR;
+    }
+
+    @ConfigProperty(name = "lime.wlr", defaultValue = "true")
+    boolean limeWLR;
+
+
+    public boolean getLimeNormalizeWeights() {
+        return limeNormalizeWeights;
+    }
+
+    @ConfigProperty(name = "lime.normalize.weights", defaultValue = "true")
+    boolean limeNormalizeWeights;
+
 
     @PostConstruct
     private void validateConfig() {
