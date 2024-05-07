@@ -15,6 +15,7 @@ import org.kie.trustyai.explainability.model.*;
 
 import jakarta.inject.Inject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.kie.trustyai.payloads.SaliencyExplanationResponse;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -57,10 +58,11 @@ public class ExplainerEndpoint {
             final LocalExplainer<SaliencyResults> explainer = explainerFactory.getExplainer(explainerType, input);
 
             final SaliencyResults results = explainer.explainAsync(prediction, provider).get();
+            final SaliencyExplanationResponse response = SaliencyExplanationResponse.fromSaliencyResults(results);
 
             try {
                 String resultsJson = objectMapper.writeValueAsString(results);
-                return Response.ok(resultsJson, MediaType.APPLICATION_JSON).build();
+                return Response.ok(response, MediaType.APPLICATION_JSON).build();
             } catch (Exception e) {
                 return Response.serverError().entity("Error serializing SaliencyResults to JSON: " + e.getMessage())
                         .build();
