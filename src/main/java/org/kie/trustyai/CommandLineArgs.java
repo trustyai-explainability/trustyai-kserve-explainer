@@ -14,6 +14,12 @@ public class CommandLineArgs {
 
     @CommandLine.Option(names = "--http_port", description = "The HTTP port of the predictor")
     private int httpPort;
+    @CommandLine.Option(names = "--predictor_protocol", defaultValue = "v1", description = "The predictor protocol version (v1 or v2)")
+    private String predictorProtocol;
+
+    public String getPredictorProtocol() {
+        return predictorProtocol;
+    }
 
     public String getPredictorHost() {
         return predictorHost;
@@ -27,14 +33,17 @@ public class CommandLineArgs {
         return httpPort;
     }
 
-    public String getV1HTTPPredictorURI() {
+    public String getV1HTTPPredictorURI(String modelName) {
+        return "http://" + predictorHost + "/v1/models/" + modelName + ":predict";
+    }
+
+    public String getV2HTTPPredictorURI(String modelName) {
 
         return "http://" +
                 predictorHost +
-                "/v1/models/" +
+                "/v2/models/" +
                 modelName +
-                ":predict";
+                "/infer";
     }
-
 
 }
