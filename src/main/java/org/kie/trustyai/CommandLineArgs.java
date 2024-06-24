@@ -39,11 +39,7 @@ public class CommandLineArgs {
 
     public String getV2HTTPPredictorURI(String modelName) {
 
-        return "http://" +
-                predictorHost +
-                "/v2/models/" +
-                modelName +
-                "/infer";
+        return "http://" + predictorHost + "/v2/models/" + modelName + "/infer";
     }
 
 }
