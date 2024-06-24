@@ -104,6 +104,20 @@ spec:
 
 The explanation request will be identical to the LIME explainer case.
 
+## Configuration
+
+The following environment variables can be used in the `InferenceService` to customize the explainer:
+
+| Name                                                                     | Description                                                        | Default       |
+|--------------------------------------------------------------------------|--------------------------------------------------------------------|---------------|
+| `EXPLAINER_TYPE`                                                         | `LIME` or `SHAP`, the explainer to use.                            | `LIME`         |
+| `LIME_SAMPLES`                                                           | The number of samples to use in LIME                               | `200` |
+| `LIME_RETRIES`                                                           | Number of LIME retries                                             | `2`   |
+| `LIME_WLR`                                                               | Use LIME Weighted Linear Regression, `true` or `false`             | `true`        |
+| `LIME_NORMALIZE_WEIGHTS`                                                 | Whether LIME should normalize the weights, `true` or `false`       | `true`        |
+| `EXPLAINER_SHAP_BACKGROUND_QUEUE`                                        | The number of observations to keep in memory for SHAP's background | `10`          |
+| `EXPLAINER_SHAP_BACKGROUND_DIVERSITY` | The number of synthetic samples to generate for diversity          | `10`          |
+
 ## Contributing
 
 To get started with contributing to this project:
