@@ -8,7 +8,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class ConfigService {
 
-    @ConfigProperty(name = "explainer.type", defaultValue = "LIME")
+    @ConfigProperty(name = "explainer.type")
     ExplainerType explainerType;
     @ConfigProperty(name = "lime.samples", defaultValue = "200")
     int limeSamples;
@@ -50,8 +50,7 @@ public class ConfigService {
     @PostConstruct
     private void validateConfig() {
         if (explainerType == null) {
-            Log.error("Unknown explainer type configured. Falling back to LIME.");
-            explainerType = ExplainerType.LIME;
+            Log.error("Unknown explainer type configured. Falling back to LIME and SHAP.");
         }
     }
 

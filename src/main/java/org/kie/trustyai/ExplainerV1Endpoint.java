@@ -1,11 +1,15 @@
 package org.kie.trustyai;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
+import io.vertx.core.json.JsonObject;
 import jakarta.enterprise.inject.Default;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -19,6 +23,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.kie.trustyai.connectors.kserve.v1.KServeV1HTTPPredictionProvider;
 import org.kie.trustyai.connectors.kserve.v1.KServeV1RequestPayload;
 import org.kie.trustyai.explainability.local.LocalExplainer;
+import org.kie.trustyai.explainability.model.Feature;
 import org.kie.trustyai.explainability.model.Prediction;
 import org.kie.trustyai.explainability.model.PredictionInput;
 import org.kie.trustyai.explainability.model.PredictionOutput;
@@ -26,6 +31,7 @@ import org.kie.trustyai.explainability.model.PredictionProvider;
 import org.kie.trustyai.explainability.model.SaliencyResults;
 import org.kie.trustyai.explainability.model.SimplePrediction;
 import org.kie.trustyai.payloads.SaliencyExplanationResponse;
+import org.kie.trustyai.payloads.SaliencyExplanationResponse.FeatureSaliency;
 
 @Path("/v1/models/{modelName}:explain")
 public class ExplainerV1Endpoint {
@@ -62,7 +68,7 @@ public class ExplainerV1Endpoint {
         final Prediction prediction = new SimplePrediction(input.get(0), output);
         final int dimensions = input.get(0).getFeatures().size();
 
-        if (configService.getExplainerType() == ExplainerType.SHAP) {
+        if (configService.getExplainerType() == ExplainerType.SHAP || configService.getExplainerType() == null) {
             if (Objects.isNull(streamingGeneratorManager.getStreamingGenerator())) {
                 Log.info("Initializing SHAP's Streaming Background Generator with dimension " + dimensions);
                 streamingGeneratorManager.initialize(dimensions);
@@ -75,16 +81,17 @@ public class ExplainerV1Endpoint {
             streamingGeneratorManager.getStreamingGenerator().update(vectorData);
         }
 
-        final ExplainerType explainerType = configService.getExplainerType();
-
         try {
-            final LocalExplainer<SaliencyResults> explainer = explainerFactory.getExplainer(explainerType);
             Log.info("Sending explaining request to " + predictorURI);
-            final SaliencyResults results = explainer.explainAsync(prediction, provider).get();
-            final SaliencyExplanationResponse response = SaliencyExplanationResponse.fromSaliencyResults(results);
-
+            CompletableFuture<SaliencyResults> lime = explainerFactory.getExplainer(ExplainerType.LIME)
+                    .explainAsync(prediction, provider);
+            CompletableFuture<SaliencyResults> shap = explainerFactory.getExplainer(ExplainerType.SHAP)
+                    .explainAsync(prediction, provider);
+            CompletableFuture<SaliencyExplanationResponse> response = lime.thenCombine(shap,
+                    (limeExplanation, shapExplanation) -> SaliencyExplanationResponse
+                            .fromSaliencyResults(limeExplanation, shapExplanation));
             try {
-                return Response.ok(response, MediaType.APPLICATION_JSON).build();
+                return Response.ok(response.get(), MediaType.APPLICATION_JSON).build();
             } catch (Exception e) {
                 return Response.serverError().entity("Error serializing SaliencyResults to JSON: " + e.getMessage())
                         .build();
