@@ -16,7 +16,8 @@ public class StreamingGeneratorManager {
     private StreamingGenerator streamingGenerator = null;
 
     public synchronized void initialize(int dimensions) {
-        if (streamingGenerator == null && configService.getExplainerType() == ExplainerType.SHAP) {
+        final ExplainerType explainerType = configService.getExplainerType();
+        if (streamingGenerator == null && (explainerType == ExplainerType.SHAP || explainerType == ExplainerType.ALL)) {
             final MultivariateOnlineEstimator<MultivariateGaussianParameters> estimator = new WelfordOnlineEstimator(dimensions);
             streamingGenerator = new StreamingGenerator(dimensions, configService.getQueueSize(), configService.getDiversitySize(), estimator);
         }
