@@ -8,7 +8,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class ConfigService {
 
-    @ConfigProperty(name = "explainer.type")
+    @ConfigProperty(name = "explainer.type", defaultValue = "ALL")
     ExplainerType explainerType;
     @ConfigProperty(name = "lime.samples", defaultValue = "200")
     int limeSamples;

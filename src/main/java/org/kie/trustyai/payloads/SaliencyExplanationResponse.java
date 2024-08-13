@@ -37,11 +37,12 @@ public class SaliencyExplanationResponse extends BaseExplanationResponse {
     @Override
     public String toString() {
         return "SaliencyExplanationResponse{" +
-                "timestamp=" + timestamp +
-                ", type='" + type + '\'' +
-                ", saliencies=" + saliencies +
-                '}';
+        "timestamp=" + timestamp + '\'' +
+        ", LIME=" + saliencies.get(ExplainerType.LIME) +
+        ", SHAP=" + saliencies.get(ExplainerType.SHAP) +
+        '}';
     }
+
 
     public static class FeatureSaliency {
 
@@ -146,5 +147,4 @@ public class SaliencyExplanationResponse extends BaseExplanationResponse {
 
         return new SaliencyExplanationResponse(combinedMap);
     }
-
 }
